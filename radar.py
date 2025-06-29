@@ -7,7 +7,8 @@ import serial.tools.list_ports
 def main():
 
     def graphScreen():
-        categories = ['0°', '30°', '60°', '90°', '120°', '150°', '170°', '200°', '230°', '260°', '290°', '320°']
+        categories = ['0°', '20°', '40°', '60°', '80°', '100°', '120°', '140°', 
+                      '160°', '180°', '200', '220', '240', '260', '280', '300', '320', '340']
         num_vars = len(categories)
         
         angles = np.linspace(0, 2 * np.pi, num_vars, endpoint=False).tolist()
@@ -17,21 +18,27 @@ def main():
 
         fig, ax = plt.subplots(facecolor='black', figsize=(6, 6), subplot_kw=dict(polar=True))
         fig.canvas.manager.set_window_title("Radar Sensor")
-        ax.set_facecolor('black')
-        ax.grid(True, color="green")
+        ax.set_facecolor('green')
+        ax.grid(True, color="limegreen")
 
-        ax.spines['polar'].set_edgecolor(color='green')
+        ax.spines['polar'].set_edgecolor(color='limegreen')
         ax.spines['polar'].set_linewidth(2)
 
         ax.set_theta_offset(np.pi / 2)
-        ax.set_theta_direction(-1)
-        ax.set_thetagrids(np.degrees(angles[:-1]), categories, color="green")
-        ax.set_ylim(0, 10)
+        ax.set_thetagrids(np.degrees(angles[:-1]), categories, color="limegreen")
+        ax.set_ylim(0, 40)
+        ax.tick_params(axis='y', colors="limegreen", labelsize=8)
         ax.set_rlabel_position(0)
 
-        scatter = ax.scatter([], [], marker='^', color='white')
+        ax.set_theta_zero_location('E')
+        ax.set_thetamin(0)
+        ax.set_thetamax(180)
 
-        return fig, ax, scatter
+        scatter = ax.scatter([], [], marker='^', color='red')
+
+        (line,) = ax.plot([], [], color='red', linewidth=1)
+
+        return fig, ax, scatter, line
 
     def getDegrees(serialInst):
         if serialInst.in_waiting:
@@ -70,7 +77,7 @@ def main():
     print(f"Connected to {portVar}")
 
     # Initialize plot
-    fig, ax, scatter = graphScreen()
+    fig, ax, scatter, line = graphScreen()
 
     plane_degrees = []
     planes = []
@@ -79,15 +86,23 @@ def main():
         degree = getDegrees(serialInst)
         if degree is not None:
             plane_degrees.append(degree)
-            planes.append(6)  # constant radius, or change as needed
+            planes.append(36)  # constant radius, or change as needed
+
+            angle_rad = np.radians(degree)
 
             # Convert to radians
             plane_angles = np.radians(plane_degrees)
 
             # Update scatter data
             scatter.set_offsets(np.c_[plane_angles, planes])
+
+            # 🔹 Added: update line data to go from center to edge
+            angle_rad = plane_angles[-1]
+            line.set_data([angle_rad, angle_rad], [0, 40])
+
             plt.draw()
-            plt.pause(0.01)
+            plt.pause(0.001)
+            plt.legend(loc="lower left")
 
             plane_degrees.pop()
             planes.pop()
