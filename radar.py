@@ -34,9 +34,9 @@ def main():
         ax.set_thetamin(0)
         ax.set_thetamax(180)
 
-        scatter = ax.scatter([], [], marker='^', color='red')
+        scatter = ax.scatter([], [], marker='^', color='red', label="OBJECT")
 
-        (line,) = ax.plot([], [], color='red', linewidth=1)
+        (line,) = ax.plot([], [], color='limegreen', linewidth=1)
 
         return fig, ax, scatter, line
 
@@ -79,32 +79,36 @@ def main():
     # Initialize plot
     fig, ax, scatter, line = graphScreen()
 
-    plane_degrees = []
-    planes = []
+    plane_degrees = [92] # for objects
+    planes = [33] # for objects
+
+    # for line
+    line_degree = []
 
     while True:
         degree = getDegrees(serialInst)
         if degree is not None:
-            plane_degrees.append(degree)
-            planes.append(36)  # constant radius, or change as needed
+            line_degree.append(degree) # green line
 
             angle_rad = np.radians(degree)
 
             # Convert to radians
             plane_angles = np.radians(plane_degrees)
+            line_angles = np.radians(line_degree) # green line
 
             # Update scatter data
-            scatter.set_offsets(np.c_[plane_angles, planes])
+            scatter.set_offsets(np.c_[plane_angles, planes]) 
 
-            # 🔹 Added: update line data to go from center to edge
-            angle_rad = plane_angles[-1]
-            line.set_data([angle_rad, angle_rad], [0, 40])
+            angle_rad = line_angles[-1] # green line
+            line.set_data([angle_rad, angle_rad], [0, 40]) # green line
 
             plt.draw()
-            plt.pause(0.001)
-            plt.legend(loc="lower left")
+            plt.pause(0.0000000000000001)
+            plt.legend(loc="lower left", edgecolor="limegreen", facecolor="green", fontsize="medium", labelcolor = "limegreen")
 
-            plane_degrees.pop()
-            planes.pop()
+            line_degree.pop()
+
+            #plane_degrees.pop()
+            #planes.pop()
 
 main()
