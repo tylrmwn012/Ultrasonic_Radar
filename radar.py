@@ -40,12 +40,13 @@ def main():
 
         return fig, ax, scatter, line
 
+    # function to get degrees from serial
     def getDegrees(serialInst):
-        if serialInst.in_waiting:
+        if serialInst.in_waiting is not None:
             packet = serialInst.readline()
-            degree = packet.decode('utf').strip()
-            print(degree)
-            return int(degree)
+            data = packet.decode('utf').strip()
+            print(data)
+            return data
         return None
 
     # Get list of ports
@@ -79,18 +80,29 @@ def main():
     # Initialize plot
     fig, ax, scatter, line = graphScreen()
 
-    plane_degrees = [92] # for objects
-    planes = [33] # for objects
+    plane_degrees = [] # for objects
+    planes = [] # for objects
 
     # for line
     line_degree = []
 
     while True:
-        degree = getDegrees(serialInst)
-        if degree is not None:
-            line_degree.append(degree) # green line
+        data = getDegrees(serialInst)
+        if data is not None:
+            dataList = data.split(',')
+            distance = int(dataList[0])
+            angle = int(dataList[1])
+        else:
+            pass
 
-            angle_rad = np.radians(degree)
+        if distance:
+
+            line_degree.append(angle) # green line
+
+            plane_degrees.append(angle)
+            planes.append(distance)
+
+            angle_rad = np.radians(angle)
 
             # Convert to radians
             plane_angles = np.radians(plane_degrees)
@@ -104,11 +116,11 @@ def main():
 
             plt.draw()
             plt.pause(0.0000000000000001)
-            plt.legend(loc="lower left", edgecolor="limegreen", facecolor="green", fontsize="medium", labelcolor = "limegreen")
 
             line_degree.pop()
-
-            #plane_degrees.pop()
-            #planes.pop()
+        
+            if 180 in plane_degrees:
+                planes.clear()
+                plane_degrees.clear()
 
 main()
