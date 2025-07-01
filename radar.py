@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import numpy as np
-
 import serial
 import serial.tools.list_ports
 
@@ -14,7 +13,7 @@ def main():
         angles = np.linspace(0, 2 * np.pi, num_vars, endpoint=False).tolist()
         angles += angles[:1]
 
-        plt.ion()  # interactive mode
+        plt.ion() 
 
         fig, ax = plt.subplots(facecolor='black', figsize=(6, 6), subplot_kw=dict(polar=True))
         fig.canvas.manager.set_window_title("Radar Sensor")
@@ -26,7 +25,7 @@ def main():
 
         ax.set_theta_offset(np.pi / 2)
         ax.set_thetagrids(np.degrees(angles[:-1]), categories, color="limegreen")
-        ax.set_ylim(0, 40)
+        ax.set_ylim(0, 35)
         ax.tick_params(axis='y', colors="limegreen", labelsize=8)
         ax.set_rlabel_position(0)
 
@@ -40,7 +39,6 @@ def main():
 
         return fig, ax, scatter, line
 
-    # function to get degrees from serial
     def getDegrees(serialInst):
         if serialInst.in_waiting is not None:
             packet = serialInst.readline()
@@ -49,15 +47,12 @@ def main():
             return data
         return None
 
-    # Get list of ports
     ports = serial.tools.list_ports.comports()
     portList = [port.device for port in ports]
 
-    # Show ports with numbers
     for i, port in enumerate(portList):
         print(f"{i}: {port}")
 
-    # User picks by index
     try:
         index = int(input("Select port number: "))
         if 0 <= index < len(portList):
@@ -69,7 +64,6 @@ def main():
         print("Invalid input.")
         exit()
 
-    # Set up serial
     serialInst = serial.Serial()
     serialInst.baudrate = 9600
     serialInst.port = portVar
@@ -77,13 +71,11 @@ def main():
 
     print(f"Connected to {portVar}")
 
-    # Initialize plot
     fig, ax, scatter, line = graphScreen()
 
-    plane_degrees = [] # for objects
-    planes = [] # for objects
+    plane_degrees = [] 
+    planes = [] 
 
-    # for line
     line_degree = []
 
     while True:
@@ -97,29 +89,27 @@ def main():
 
         if distance:
 
-            line_degree.append(angle) # green line
+            line_degree.append(angle)
 
             plane_degrees.append(angle)
             planes.append(distance)
 
             angle_rad = np.radians(angle)
 
-            # Convert to radians
             plane_angles = np.radians(plane_degrees)
-            line_angles = np.radians(line_degree) # green line
+            line_angles = np.radians(line_degree) 
 
-            # Update scatter data
             scatter.set_offsets(np.c_[plane_angles, planes]) 
 
-            angle_rad = line_angles[-1] # green line
-            line.set_data([angle_rad, angle_rad], [0, 40]) # green line
+            angle_rad = line_angles[-1] 
+            line.set_data([angle_rad, angle_rad], [0, 35]) 
 
             plt.draw()
             plt.pause(0.0000000000000001)
 
             line_degree.pop()
         
-            if 180 in plane_degrees:
+            if plane_degrees.count(0) == 1 :
                 planes.clear()
                 plane_degrees.clear()
 
